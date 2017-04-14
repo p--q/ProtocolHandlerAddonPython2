@@ -34,7 +34,7 @@ class MenuItem(Elem):
         :returns: a list of nodes
         :rtype: list
         '''
-        ORDER = "URL","Title","Target","Context","Submenu","ControlType","Width"  # ノードは順番が決まっている。 "ImageIdentifier"ノードは使わないので無視する。
+        ORDER = "URL","Title","ToolBarItems","Target","Context","Submenu","ControlType","Width"  # ノードの順。 "ImageIdentifier"ノードは使わないので無視する。
         lst_nd = list()  # ノードをいれるリスト。
         for key in ORDER:
             if key in xdic:
@@ -44,7 +44,7 @@ class MenuItem(Elem):
                     for lang,txt in val.items():
                         nd.append(Elem("value",{"xml:lang":lang},text=txt))
                     lst_nd.append(nd)
-                elif key == "Submenu":  # サブメニューノードのとき
+                elif key == "Submenu" or key == "ToolBarItems":  # サブメニューまたはツールバーアイテムノードのとき
                     fn = val.pop()  # サブメニュー設定のための関数を取得。
                     if type(fn) is types.MethodType:
                         lst_nd.append(fn(dic,val))
@@ -115,16 +115,25 @@ class OfficeToolBar(MenuItem):  # ツールバーを作成。
     View->Toolbars
     Select this tool bar.
     
-    ツールバーの名前は未設定。
-    
     '''
     def __init__(self,dic):
         super().__init__("node",{'oor:name':"OfficeToolBar"})  # 変更不可。 
         self.append(Elem("node",{'oor:name':dic["HANDLED_PROTOCOL"],"oor:op":"replace"}))  # oor:nameの値はノードの任意の固有名。
-        self[0].append(Elem("node",{'oor:name':"m1","oor:op":"replace"}))  # oor:nameの値はノードの任意の固有名。この順でソートされる。  
-        self[0][0].extend(super().createNodes(dic,{"URL":dic["HANDLED_PROTOCOL"] + ":Function1","Title":{"en-US":"Function 1"},"Target":"_self","Context":"com.sun.star.text.TextDocument"}))
-        self[0].append(Elem("node",{'oor:name':"m2","oor:op":"replace"}))  # oor:nameの値はノードの任意の固有名。この順でソートされる。 
-        self[0][1].extend(super().createNodes(dic,{"URL":dic["HANDLED_PROTOCOL"] + ":Function2","Title":{"en-US":"Function 2"},"Target":"_self","Context":"com.sun.star.text.TextDocument"}))
+        self[0].extend(super().createNodes(dic,{"Title":{"en-US":"Toolbar Title Test"},"ToolBarItems":["m1","m2",self.control]}))  # Titleにツールバーの名前を設定。
+    def control(self,dic,val):
+        nd = Elem("node",{"oor:name":"ToolBarItems"})  # 変更不可。
+        i = 0
+        nd.append(Elem("node",{"oor:name":val[i],"oor:op":"replace"}))  # oor:nameの値はノードの任意の固有名。この順でソートされる。
+        nd[i].extend(super().createNodes(dic,{"URL":dic["HANDLED_PROTOCOL"] + ":Function1","Title":{"en-US":"Function 1"},"Target":"_self","Context":"com.sun.star.text.TextDocument"}))
+        i = 1
+        nd.append(Elem("node",{"oor:name":val[i],"oor:op":"replace"}))  # oor:nameの値はノードの任意の固有名。この順でソートされる。
+        nd[i].extend(super().createNodes(dic,{"URL":dic["HANDLED_PROTOCOL"] + ":Function2","Title":{"en-US":"Function 2"},"Target":"_self","Context":"com.sun.star.text.TextDocument"}))
+        return nd
+    
+#         self[0].append(Elem("node",{'oor:name':"m1","oor:op":"replace"}))  # oor:nameの値はノードの任意の固有名。この順でソートされる。  
+#         self[0][0].extend(super().createNodes(dic,{"URL":dic["HANDLED_PROTOCOL"] + ":Function1","Title":{"en-US":"Function 1"},"Target":"_self","Context":"com.sun.star.text.TextDocument"}))
+#         self[0].append(Elem("node",{'oor:name':"m2","oor:op":"replace"}))  # oor:nameの値はノードの任意の固有名。この順でソートされる。 
+#         self[0][1].extend(super().createNodes(dic,{"URL":dic["HANDLED_PROTOCOL"] + ":Function2","Title":{"en-US":"Function 2"},"Target":"_self","Context":"com.sun.star.text.TextDocument"}))
 class Images(MenuItem):  # アイコンを表示させるコマンドURLを設定。
     '''
     Specify command URL to display icon
@@ -164,7 +173,7 @@ class Images(MenuItem):  # アイコンを表示させるコマンドURLを設�
         nd.append(Elem("prop",{"oor:name":"URL"}))
         nd[0].append(Elem("value",text=url))  # アイコンを表示させるコマンドURLを設定。
         nd.append(Elem("node",{"oor:name":"UserDefinedImages"}))
-        ORDER = "ImageSmall","ImageBig","ImageSmallHC","ImageBigHC"
+        ORDER = "ImageSmall","ImageBig","ImageSmallHC","ImageBigHC"  # ノードの順。
         for key in ORDER:
             if key in dic_image:
                 snd = Elem("prop",{"oor:name":key,"oor:type":"xs:hexBinary"})

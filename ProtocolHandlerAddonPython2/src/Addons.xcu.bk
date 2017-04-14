@@ -158,40 +158,56 @@
 			</node>
 		</node>
 		<node oor:name="OfficeToolBar">
-			<node oor:name="org.openoffice.Office.addon.example" oor:op="replace">
-				<prop oor:name="Title" oor:type="xs:string">
-					<value xml:lang="en-US">Toolbar Title Test</value>
-					<value xml:lang="ja">Toolbar Title Test</value>
-				</prop>
-				<node oor:name="ToolBarItems">
-					<node oor:name="m1" oor:op="replace">
-						<prop oor:name="URL" oor:type="xs:string">
-							<value>org.openoffice.Office.addon.example:Function1</value>
-						</prop>
-						<prop oor:name="Title" oor:type="xs:string">
-							<value xml:lang="en-US">Function 1</value>
-						</prop>
-						<prop oor:name="Target" oor:type="xs:string">
-							<value>_self</value>
-						</prop>
-						<prop oor:name="Context" oor:type="xs:string">
-							<value>com.sun.star.text.TextDocument</value>
-						</prop>
-					</node>
-					<node oor:name="m2" oor:op="replace">
-						<prop oor:name="URL" oor:type="xs:string">
-							<value>org.openoffice.Office.addon.example:Function2</value>
-						</prop>
-						<prop oor:name="Title" oor:type="xs:string">
-							<value xml:lang="en-US">Function 2</value>
-						</prop>
-						<prop oor:name="Target" oor:type="xs:string">
-							<value>_self</value>
-						</prop>
-						<prop oor:name="Context" oor:type="xs:string">
-							<value>com.sun.star.text.TextDocument</value>
-						</prop>
-					</node>
+			<node
+				oor:name="org.openoffice.Office.addon.example"
+				oor:op="replace">
+				<node
+					oor:name="m1"
+					oor:op="replace">
+					<prop
+						oor:name="URL"
+						oor:type="xs:string">
+						<value>org.openoffice.Office.addon.example:Function1</value>
+					</prop>
+					<prop
+						oor:name="Title"
+						oor:type="xs:string">
+						<value xml:lang="en-US">Function 1</value>
+					</prop>
+					<prop
+						oor:name="Target"
+						oor:type="xs:string">
+						<value>_self</value>
+					</prop>
+					<prop
+						oor:name="Context"
+						oor:type="xs:string">
+						<value>com.sun.star.text.TextDocument</value>
+					</prop>
+				</node>
+				<node
+					oor:name="m2"
+					oor:op="replace">
+					<prop
+						oor:name="URL"
+						oor:type="xs:string">
+						<value>org.openoffice.Office.addon.example:Function2</value>
+					</prop>
+					<prop
+						oor:name="Title"
+						oor:type="xs:string">
+						<value xml:lang="en-US">Function 2</value>
+					</prop>
+					<prop
+						oor:name="Target"
+						oor:type="xs:string">
+						<value>_self</value>
+					</prop>
+					<prop
+						oor:name="Context"
+						oor:type="xs:string">
+						<value>com.sun.star.text.TextDocument</value>
+					</prop>
 				</node>
 			</node>
 		</node>
@@ -247,8 +263,8 @@
 				<prop
 					oor:name="Title"
 					oor:type="xs:string">
-					<value xml:lang="de">Über Add-On Beispiel</value>
 					<value xml:lang="en-US">About Add-On Example</value>
+					<value xml:lang="de">Über Add-On Beispiel</value>
 					<value xml:lang="x-no-translate" />
 				</prop>
 				<prop
