@@ -34,7 +34,7 @@ class MenuItem(Elem):
         :returns: a list of nodes
         :rtype: list
         '''
-        ORDER = "URL","Title","ToolBarItems","Target","Context","Submenu","ControlType","Width"  # ノードの順。 "ImageIdentifier"ノードは使わないので無視する。
+        ORDER = "URL","Title","Target","Context","Submenu","ControlType","Width"  # ノードの順を指定。 "ImageIdentifier"ノードは使わないので無視する。
         lst_nd = list()  # ノードをいれるリスト。
         for key in ORDER:
             if key in xdic:
@@ -44,7 +44,7 @@ class MenuItem(Elem):
                     for lang,txt in val.items():
                         nd.append(Elem("value",{"xml:lang":lang},text=txt))
                     lst_nd.append(nd)
-                elif key == "Submenu" or key == "ToolBarItems":  # サブメニューまたはツールバーアイテムノードのとき
+                elif key == "Submenu":  # サブメニューノードのとき
                     fn = val.pop()  # サブメニュー設定のための関数を取得。
                     if type(fn) is types.MethodType:
                         lst_nd.append(fn(dic,val))
@@ -52,7 +52,33 @@ class MenuItem(Elem):
                     nd = Elem("prop",{"oor:name":key,"oor:type":"xs:string"})
                     nd.append(Elem("value",text=val)) 
                     lst_nd.append(nd) 
-        return lst_nd        
+        return lst_nd 
+    def createWindowStateNodes(self,dic,xdic):  # ツールバーの設定。
+        '''
+        Properties for ToolBar
+        
+        :param dic: PYTHON_UNO_Component,IMPLE_NAME,SERVICE_NAME,HANDLED_PROTOCOL
+        :type dic: dict
+        :param xdic: Xml Attributes
+        :type xdic: dict
+        :returns: a list of nodes
+        :rtype: list
+        '''
+        ORDER = "UIName","ContextSensitive","Visible","Docked" # ノードの順を指定。
+        lst_nd = list()  # ノードをいれるリスト。
+        for key in ORDER:
+            if key in xdic:
+                val = xdic[key]
+                if key == "UIName":  # タイトルノードのとき
+                    nd = Elem("prop",{"oor:name":key,"oor:type":"xs:string"})
+                    for lang,txt in val.items():
+                        nd.append(Elem("value",{"xml:lang":lang},text=txt))
+                    lst_nd.append(nd)
+                else:  # それ以外のノードの時。
+                    nd = Elem("prop",{"oor:name":key,"oor:type":"xs:boolean"})
+                    nd.append(Elem("value",text=val)) 
+                    lst_nd.append(nd) 
+        return lst_nd         
 class AddonMenu(MenuItem):  # ツール→アドオン、に表示されるメニュー項目を作成。
     '''
     Tools->Add-Ons->AddonMenu
@@ -115,25 +141,30 @@ class OfficeToolBar(MenuItem):  # ツールバーを作成。
     View->Toolbars
     Select this tool bar.
     
+    ツールバーの名前は未設定。
+    
     '''
     def __init__(self,dic):
         super().__init__("node",{'oor:name':"OfficeToolBar"})  # 変更不可。 
         self.append(Elem("node",{'oor:name':dic["HANDLED_PROTOCOL"],"oor:op":"replace"}))  # oor:nameの値はノードの任意の固有名。
-        self[0].extend(super().createNodes(dic,{"Title":{"en-US":"Toolbar Title Test"},"ToolBarItems":["m1","m2",self.control]}))  # Titleにツールバーの名前を設定。
-    def control(self,dic,val):
-        nd = Elem("node",{"oor:name":"ToolBarItems"})  # 変更不可。
-        i = 0
-        nd.append(Elem("node",{"oor:name":val[i],"oor:op":"replace"}))  # oor:nameの値はノードの任意の固有名。この順でソートされる。
-        nd[i].extend(super().createNodes(dic,{"URL":dic["HANDLED_PROTOCOL"] + ":Function1","Title":{"en-US":"Function 1"},"Target":"_self","Context":"com.sun.star.text.TextDocument"}))
-        i = 1
-        nd.append(Elem("node",{"oor:name":val[i],"oor:op":"replace"}))  # oor:nameの値はノードの任意の固有名。この順でソートされる。
-        nd[i].extend(super().createNodes(dic,{"URL":dic["HANDLED_PROTOCOL"] + ":Function2","Title":{"en-US":"Function 2"},"Target":"_self","Context":"com.sun.star.text.TextDocument"}))
-        return nd
-    
-#         self[0].append(Elem("node",{'oor:name':"m1","oor:op":"replace"}))  # oor:nameの値はノードの任意の固有名。この順でソートされる。  
-#         self[0][0].extend(super().createNodes(dic,{"URL":dic["HANDLED_PROTOCOL"] + ":Function1","Title":{"en-US":"Function 1"},"Target":"_self","Context":"com.sun.star.text.TextDocument"}))
-#         self[0].append(Elem("node",{'oor:name':"m2","oor:op":"replace"}))  # oor:nameの値はノードの任意の固有名。この順でソートされる。 
-#         self[0][1].extend(super().createNodes(dic,{"URL":dic["HANDLED_PROTOCOL"] + ":Function2","Title":{"en-US":"Function 2"},"Target":"_self","Context":"com.sun.star.text.TextDocument"}))
+        self[0].append(Elem("node",{'oor:name':"m1","oor:op":"replace"}))  # oor:nameの値はノードの任意の固有名。この順でソートされる。  
+        self[0][0].extend(super().createNodes(dic,{"URL":dic["HANDLED_PROTOCOL"] + ":Function1","Title":{"en-US":"Function 1"},"Target":"_self","Context":"com.sun.star.text.TextDocument"}))
+        self[0].append(Elem("node",{'oor:name':"m2","oor:op":"replace"}))  # oor:nameの値はノードの任意の固有名。この順でソートされる。 
+        self[0][1].extend(super().createNodes(dic,{"URL":dic["HANDLED_PROTOCOL"] + ":Function2","Title":{"en-US":"Function 2"},"Target":"_self","Context":"com.sun.star.text.TextDocument"}))
+        self.createWindwStatexcu(dic,"Writer")  # Writer用のツールバーのプロパティの設定。
+    def createWindwStatexcu(self,dic,ctxt):  # ツールバーのプロパティの設定。
+        #Creation of WriterWindwState.xcu、Calcの場合はCalcWindwState.xcu
+        filename = ctxt + "WindowState.xcu"
+        createBK(filename)  # すでにあるファイルをbkに改名
+        with open(filename,"w",encoding="utf-8") as fp:   
+            rt = Elem("oor:component-data",{"oor:name":ctxt + "WindowState","oor:package":"org.openoffice.Office.UI","xmlns:oor":"http://openoffice.org/2001/registry","xmlns:xs":"http://www.w3.org/2001/XMLSchema"})  # 根の要素を作成。
+            rt.append(Elem("node",{'oor:name':"UIElements"}))
+            rt[0].append(Elem("node",{'oor:name':"States"}))
+            rt[0][0].append(Elem("node",{'oor:name':"private:resource/toolbar/addon_" + dic["HANDLED_PROTOCOL"],"oor:op":"replace"}))
+            rt[0][0][0].extend(super().createWindowStateNodes(dic,{"UIName":{"en-US":"OfficeToolBar Title"},"ContextSensitive":"false","Visible":"true","Docked":"false"}))  # ツールバーのプロパティを設定。
+            tree = ET.ElementTree(rt)  # 根要素からxml.etree.ElementTree.ElementTreeオブジェクトにする。
+            tree.write(fp.name,"utf-8",True)  # xml_declarationを有効にしてutf-8でファイルに出力する。   
+            print(filename + " has been created.")  
 class Images(MenuItem):  # アイコンを表示させるコマンドURLを設定。
     '''
     Specify command URL to display icon
@@ -173,7 +204,7 @@ class Images(MenuItem):  # アイコンを表示させるコマンドURLを設�
         nd.append(Elem("prop",{"oor:name":"URL"}))
         nd[0].append(Elem("value",text=url))  # アイコンを表示させるコマンドURLを設定。
         nd.append(Elem("node",{"oor:name":"UserDefinedImages"}))
-        ORDER = "ImageSmall","ImageBig","ImageSmallHC","ImageBigHC"  # ノードの順。
+        ORDER = "ImageSmall","ImageBig","ImageSmallHC","ImageBigHC"
         for key in ORDER:
             if key in dic_image:
                 snd = Elem("prop",{"oor:name":key,"oor:type":"xs:hexBinary"})

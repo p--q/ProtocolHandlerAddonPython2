@@ -21,6 +21,8 @@ def createComponentsFile(filename):  # .componentファイルの作成。
         tree = ET.ElementTree(rt)  # 根要素からxml.etree.ElementTree.ElementTreeオブジェクトにする。
         tree.write(fp.name,"utf-8",True)  # xml_declarationを有効にしてutf-8でファイルに出力する。   
         print(filename + " file has been created.")
+def addcfgNode(f):
+    return Elem("manifest:file-entry",{"manifest:full-path":f,"manifest:media-type":"application/vnd.sun.star.configuration-data"})
 def createManifestFile(component_file,unordb_file):  # manifext.xmlファイルの作成
     mani = os.path.join(src_path,"META-INF","manifest.xml")  # manifest.xmlの絶対パスを取得。
     if not os.path.exists("META-INF"):  # META-INFフォルダがなければ作成する。
@@ -29,10 +31,15 @@ def createManifestFile(component_file,unordb_file):  # manifext.xmlファイル�
         createBK(mani)  # 既存のファイルを拡張子bkでバックアップ。  
     with open(mani,"w",encoding="utf-8") as fp:
         rt = Elem("manifest:manifest",{"xmlns:manifest":"http://openoffice.org/2001/manifest"})
-        for xcu in glob.iglob("*.xcu"):
-            rt.append(Elem("manifest:file-entry",{"manifest:full-path":xcu,"manifest:media-type":"application/vnd.sun.star.configuration-data"}))
+        xcus = glob.glob("*.xcu")  # xcuファイルのリストを取得。
+        addonsxcu = "Addons.xcu"
+        if addonsxcu in xcus:  # "Addons.xcu"ファイルがあるときは先頭のノードにする。
+            rt.append(addcfgNode(addonsxcu))
+            xcus.remove(addonsxcu)
+        for xcu in xcus:
+            rt.append(addcfgNode(xcu))
         if os.path.exists(unordb_file):
-            rt.append(Elem("manifest:file-entry",{"manifest:full-path":unordb_file,"manifest:media-type":"application/vnd.sun.star.configuration-data"}))
+            rt.append(addcfgNode(unordb_file))
         if os.path.exists(component_file):
             rt.append(Elem("manifest:file-entry",{"manifest:full-path":component_file,"manifest:media-type":"application/vnd.sun.star.uno-components"}))
         tree = ET.ElementTree(rt)  # 根要素からxml.etree.ElementTree.ElementTreeオブジェクトにする。
